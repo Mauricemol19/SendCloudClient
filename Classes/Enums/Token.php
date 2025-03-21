@@ -4,7 +4,7 @@ namespace SendCloudClient
     class Token
     {
         public string $access_token;
-        public int $expires_in;
+        public string $expires_in;
         public string $id_token;
         public string $refresh_token;
         public string $scope;

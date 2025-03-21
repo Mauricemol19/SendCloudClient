@@ -1,43 +1,56 @@
 <?php
 namespace SendCloudClient
 {
+
+    use Curl\Curl;
+
     class Auth
     {
-        function Auth($user, $password, $curl) : ?string
+        /**
+         * @param $user
+         * @param $password
+         * @return string|null
+         */
+        public static function Instantiate($user, $password) : ?string
         {
-            $curl->setHeader('Authorization', 'Basic ' . base64_encode("$user:$password"));
+            $curl = new Curl();
 
-            curl_setopt_array($curl, [
-                CURLOPT_URL => CURLOPT_URL_CONST,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => "",
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 30,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => "POST",
-                CURLOPT_POSTFIELDS => "client_id=" . AUTH_CLIENT_ID . "&code=" . AUTH_CLIENT_CODE
-                                        . "&grant_type=" . AUTH_CLIENT_GRANT_TYPE . "&redirect_uri=" . AUTH_CLIENT_REDIRECT_URI
-                                        . "&refresh_token=" . AUTH_CLIENT_REFRESH_TOKEN,
-                CURLOPT_HTTPHEADER => [
-                    "Accept: application/json",
-                    "Authorization: Basic 123",
-                    "Content-Type: application/x-www-form-urlencoded"
-                ],
+            $curl->setBasicAuthentication($user, $password);
+            $curl->SetUserAgent("");
+            $curl->setHeader("X-Requested-With", "XMLHttpRequest");
+            //$curl->setHeader("Prefer:", "code=200, dynamic=true");
+
+            $curl->post(O2AUTH_URL, [
+                "client_id" => AUTH_CLIENT_ID,
+                "code" => AUTH_CLIENT_CODE,
+                "grant_type" => AUTH_CLIENT_GRANT_TYPE,
+                "redirect_uri" => AUTH_CLIENT_REDIRECT_URI,
+                "refresh_token" => AUTH_CLIENT_REFRESH_TOKEN,
             ]);
 
-            $response = curl_exec($curl);
-            $err = curl_error($curl);
+            $curl->close();
 
-            curl_close($curl);
-
-            if ($err)
+            if ($curl->error_code)
             {
-                return $err;
+                return $curl->error_code;
             }
             else
             {
-                return $response;
+                return $curl->response;
             }
+        }
+
+        /**
+         * @param $curl
+         * @return Curl
+         */
+        public static function BasicAuth($curl) : Curl
+        {
+            $curl->setHeader('Content-Type', 'application/json');
+            $curl->setHeader('Authorization', 'Basic ' . base64_encode(SendCloudClient::$username . ':' . SendCloudClient::$password));
+            $curl->setHeader("Prefer", "code=200, dynamic=false");
+
+            return $curl;
         }
     }
 }

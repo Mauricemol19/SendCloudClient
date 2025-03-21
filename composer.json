@@ -1,6 +1,7 @@
 {
     "require": {
         "curl/curl": "^2.5",
-      "ext-curl": "*"
+      "ext-curl": "*",
+      "ext-json": "*"
     }
 }
